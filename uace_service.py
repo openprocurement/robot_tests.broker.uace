@@ -3,6 +3,7 @@
 
 from datetime import datetime
 from iso8601 import parse_date
+import os
 
 
 def subtract_from_time(date_time, subtr_min, subtr_sec):
@@ -21,7 +22,6 @@ def convert_string_from_dict_uace(string):
         u"грн": u"UAH",
         u"True": u"1",
         u"False": u"0",
-        u"Відкриті торги": u"aboveThresholdUA",
         u'Код CAV': u'CAV',
         u'з урахуванням ПДВ': True,
         u'без урахуванням ПДВ': False,
@@ -31,8 +31,9 @@ def convert_string_from_dict_uace(string):
     }.get(string, string)
 
 
-def adapt_procuringEntity(tender_data):
-    tender_data['data']['procuringEntity']['name'] = u"Ольмек"
+def adapt_procuringEntity(role_name, tender_data):
+    if role_name == 'tender_owner':
+        tender_data['data']['procuringEntity']['name'] = u"Ольмек"
     return tender_data
 
 
@@ -54,3 +55,15 @@ def adapt_view_data(value, field_name):
     elif 'Date' in field_name:
         value = subtract_from_time(value, 0, 0)
     return convert_string_from_dict_uace(value)
+
+
+def adapt_view_item_data(value, field_name):
+    if 'unit.name' in field_name:
+        value = ' '.join(value.split(' ')[1:])
+    elif 'quantity' in field_name:
+        value = float(value.split(' ')[0])
+    return convert_string_from_dict_uace(value)
+
+
+def get_upload_file_path():
+    return os.path.join(os.getcwd(), 'src/robot_tests.broker.uace/testFileForUpload.txt')
