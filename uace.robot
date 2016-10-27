@@ -35,15 +35,16 @@ Login
   [Arguments]  ${username}  ${tender_data}
   ${items}=  Get From Dictionary  ${tender_data.data}  items
   Switch Browser  ${username}
-  Wait Until Page Contains Element  xpath=//a[@href="https://eauction.uace.com.ua/tenders"]  10
-  Click Element  xpath=//a[@href="https://eauction.uace.com.ua/tenders"]
-  Click Element  xpath=//a[@href="https://eauction.uace.com.ua/tenders/index"]
-  Click Element  xpath=//a[contains(@href,"https://eauction.uace.com.ua/buyer/tender/create")]
+  Wait Until Page Contains Element  xpath=//a[@href="http://test-eauction.uace.com.ua/tenders"]  10
+  Click Element  xpath=//a[@href="http://test-eauction.uace.com.ua/tenders"]
+  Click Element  xpath=//a[@href="http://test-eauction.uace.com.ua/tenders/index"]
+  Click Element  xpath=//a[contains(@href,"http://test-eauction.uace.com.ua/buyer/tender/create")]
   Conv And Select From List By Value  name=Tender[value][valueAddedTaxIncluded]  ${tender_data.data.value.valueAddedTaxIncluded}
   ConvToStr And Input Text  name=Tender[value][amount]  ${tender_data.data.value.amount}
   ConvToStr And Input Text  name=Tender[minimalStep][amount]  ${tender_data.data.minimalStep.amount}
   ConvToStr And Input Text  name=Tender[guarantee][amount]  ${tender_data.data.guarantee.amount}
   Input text  name=Tender[title]  ${tender_data.data.title}
+  Input text  name=Tender[dgfID]  ${tender_data.data.title}
   Input text  name=Tender[description]  ${tender_data.data.description}
   Input Date  name=Tender[auctionPeriod][startDate]  ${tender_data.data.auctionPeriod.startDate}
   Додати предмет  ${items[0]}  0
@@ -70,7 +71,7 @@ Login
   Input text  name=Tender[items][${index}][address][locality]  ${item.deliveryAddress.locality}
   Input text  name=Tender[items][${index}][address][streetAddress]  ${item.deliveryAddress.streetAddress}
   Input text  name=Tender[items][${index}][address][postalCode]  ${item.deliveryAddress.postalCode}
-  Select From List By Value  name=Tender[procuringEntity][contactPoint][fio]  24
+  Select From List By Value  name=Tender[procuringEntity][contactPoint][fio]  79
 
 Завантажити документ
   [Arguments]  ${username}  ${filepath}  ${tender_uaid}
@@ -86,7 +87,7 @@ Login
 Пошук тендера по ідентифікатору
   [Arguments]  ${username}  ${tenderID}
   Switch browser  ${username}
-  Go To  https://eauction.uace.com.ua/tenders/
+  Go To  http://test-eauction.uace.com.ua/tenders/
   Input text  name=TendersSearch[tender_cbd_id]  ${tenderID}
   Click Element  xpath=//button[@class="btn btn-success top-buffer margin23"]
   Wait Until Keyword Succeeds  30x  400ms  Перейти на сторінку з інформацією про тендер  ${tenderID}
@@ -99,6 +100,7 @@ Login
 
 Оновити сторінку з тендером
   [Arguments]  ${username}  ${tenderID}
+  Switch Browser  ${username}
   Reload Page
 
 Внести зміни в тендер
@@ -138,14 +140,10 @@ Login
 Отримати інформацію із тендера
   [Arguments]  ${username}  ${tender_uaid}  ${field_name}
   ${red}=  Evaluate  "\\033[1;31m"
-  Run Keyword If  '${field_name}' == 'status'  Click Element   xpath=//a[text()='Інформація про закупівлю']
+  Run Keyword If  '${field_name}' == 'status'  Click Element   xpath=//a[text()='Інформація про аукціон']
   ${value}=  Run Keyword If
-  #...  'unit.code' in '${field_name}'  Log To Console   ${red}\n\t\t\t Це поле не виводиться на uace
-  #...  ELSE IF  'unit' in '${field_name}'  Get Text  xpath=//*[@tid="items.quantity"]
-  #...  ELSE IF  'deliveryLocation' in '${field_name}'  Log To Console  ${red}\n\t\t\t Це поле не виводиться на uace
-  #...  ELSE IF  'items' in '${field_name}'  Get Text  xpath=//*[@tid="${field_name.replace('[0]', '')}"]
-  #...  ELSE IF  'questions' in '${field_name}'  uace.Отримати інформацію із запитання  ${field_name}
   ...  'value' in '${field_name}'  Get Text  xpath=//*[@tid="value.amount"]
+  ...  ELSE IF  '${field_name}' == 'auctionPeriod.startDate'  Get Text  xpath=(//*[@tid="tenderPeriod.endDate"])[2]
   ...  ELSE  Get Text  xpath=//*[@tid="${field_name.replace('auction', 'tender')}"]
   ${value}=  adapt_view_data  ${value}  ${field_name}
   [return]  ${value}
@@ -186,7 +184,10 @@ Login
   Choose File  name=FileUpload[file]  ${file_path}
   Select From List By Value  name=documents[0][documentType]  financialLicense
   Click Element  xpath=//button[contains(text(), 'Відправити')]
-  Wait Until Element Is Visible  xpath=//div[contains(@class, 'alert-success')]
+  Wait Until Element Is Visible  name=delete_bids
+  ${url}=  Log Location
+  Go To  http://test-eauction.uace.com.ua/bids/send/${url.split('?')[0].split('/')[-1]}
+  Go To  ${url}
 
 Скасувати цінову пропозицію
   [Arguments]  ${username}  ${tender_uaid}  ${bid}
@@ -203,12 +204,13 @@ Login
   Choose File  name=FileUpload[file]  ${file_path}
   Select From List By Value  name=documents[0][documentType]  financialLicense
   Click Element  xpath=//button[contains(text(), 'Відправити')]
-  Wait Until Element Is Visible  xpath=//div[contains(@class, 'alert-success')]
-  Capture Page Screenshot
+  Wait Until Element Is Visible  name=delete_bids
+  ${url}=  Log Location
+  Go To  http://test-eauction.uace.com.ua/bids/send/${url.split('?')[0].split('/')[-1]}
+  Go To  ${url}
 
 Завантажити документ в ставку
   [Arguments]  ${username}  ${path}  ${tender_uaid}  ${doc_type}=documents
-  Capture Page Screenshot
   uace.Пошук тендера по ідентифікатору   ${username}  ${tender_uaid}
   ${value}=  uace.Отримати інформацію із пропозиції  ${username}  ${tender_uaid}  ${EMPTY}
   uace.Скасувати цінову пропозицію  ${username}  ${tender_uaid}  ${EMPTY}
@@ -216,7 +218,10 @@ Login
   Choose File  name=FileUpload[file]  ${path}
   Select From List By Value  name=documents[0][documentType]  financialLicense
   Click Element  xpath=//button[contains(text(), 'Відправити')]
-  Wait Until Element Is Visible  xpath=//div[contains(@class, 'alert-success')]
+  Wait Until Element Is Visible  name=delete_bids
+  ${url}=  Log Location
+  Go To  http://test-eauction.uace.com.ua/bids/send/${url.split('?')[0].split('/')[-1]}
+  Go To  ${url}
 
 Змінити документ в ставці
   [Arguments]  ${username}  ${path}  ${bidid}  ${docid}
@@ -233,7 +238,7 @@ Login
 Отримати посилання на аукціон для глядача
   [Arguments]  ${username}  ${tender_uaid}  ${lot_id}=${Empty}
   uace.Пошук тендера по ідентифікатору   ${username}  ${tender_uaid}
-  ${auction_url}  Get Element Attribute  xpath=//a[contains(text(), 'Аукцiон')]@href
+  ${auction_url}  Get Element Attribute  xpath=//a[contains(text(), 'Перебіг аукціону')]@href
   [return]  ${auction_url}
 
 Отримати посилання на аукціон для учасника
@@ -241,6 +246,38 @@ Login
   uace.Пошук тендера по ідентифікатору   ${username}  ${tender_uaid}
   ${auction_url}  Get Element Attribute  xpath=//a[contains(text(), 'Аукцiон')]@href
   [return]  ${auction_url}
+
+
+###############################################################################################################
+###########################################    КВАЛІФІКАЦІЯ    ################################################
+###############################################################################################################
+
+Підтвердити постачальника
+  [Arguments]  ${username}  ${tender_uaid}  ${award_num}
+  uace.Пошук тендера по ідентифікатору   ${username}  ${tender_uaid}
+  Click Element  xpath=//a[text()='Таблиця квалiфiкацiї']
+  Wait Until Element Is Visible  xpath=//button[@name='protokol_ok']
+  Choose Ok On Next Confirmation
+  Click Element  xpath=//button[@name='protokol_ok']
+  Confirm Action
+  Wait Until Element Is Visible  xpath=//button[text()='Визнати переможцем']
+  Click Element  xpath=//button[text()='Визнати переможцем']
+  Wait Until Element Is Visible   xpath=//button[contains(@class, 'tender_contract_btn')]
+
+Підтвердити підписання контракту
+  [Arguments]  ${username}  ${tender_uaid}  ${contract_num}
+  Log Many   ${contract_num}
+  ${file_path}=  get_upload_file_path
+  uace.Пошук тендера по ідентифікатору   ${username}  ${tender_uaid}
+  Click Element  xpath=//a[text()='Таблиця квалiфiкацiї']
+  Click Element  xpath=//button[contains(@class, 'tender_contract_btn')]
+  Choose File  name=FileUpload[file]  ${file_path}
+  Click Element  xpath=(//button[text()='Завантажити'])[2]
+  Wait Until Keyword Succeeds  5 x  0.5 s  Click Element  xpath=//button[contains(@class, 'tender_contract_btn')]
+  Input Text  xpath=(//input[@name="Contract[0][contractNumber]"])[2]  ${contract_num}
+  Choose Ok On Next Confirmation
+  Click Element  xpath=(//button[text()='Активувати'])[2]
+  Confirm Action
 
 ###############################################################################################################
 

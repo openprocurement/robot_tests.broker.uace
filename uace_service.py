@@ -4,7 +4,7 @@
 from datetime import datetime
 from iso8601 import parse_date
 import os
-
+import urllib
 
 def subtract_from_time(date_time, subtr_min, subtr_sec):
     sub = datetime.strptime(date_time, "%d/%m/%Y %H:%M:%S")
@@ -28,12 +28,13 @@ def convert_string_from_dict_uace(string):
         u'ОЧIКУВАННЯ ПРОПОЗИЦIЙ': u'active.tendering',
         u'Перiод уточнень': u'active.enquires',
         u'АУКЦIОН': u'active.auction',
+        u'КВАЛIФIКАЦIЯ ПЕРЕМОЖЦЯ': u'active.qualification',
     }.get(string, string)
 
 
 def adapt_procuringEntity(role_name, tender_data):
     if role_name == 'tender_owner':
-        tender_data['data']['procuringEntity']['name'] = u"Ольмек"
+        tender_data['data']['procuringEntity']['name'] = u"Юаце"
     return tender_data
 
 
