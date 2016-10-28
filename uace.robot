@@ -44,7 +44,7 @@ Login
   ConvToStr And Input Text  name=Tender[minimalStep][amount]  ${tender_data.data.minimalStep.amount}
   ConvToStr And Input Text  name=Tender[guarantee][amount]  ${tender_data.data.guarantee.amount}
   Input text  name=Tender[title]  ${tender_data.data.title}
-  Input text  name=Tender[dgfID]  ${tender_data.data.title}
+  Input text  name=Tender[dgfID]  ${tender_data.data.dgfID}
   Input text  name=Tender[description]  ${tender_data.data.description}
   Input Date  name=Tender[auctionPeriod][startDate]  ${tender_data.data.auctionPeriod.startDate}
   Додати предмет  ${items[0]}  0
@@ -180,6 +180,7 @@ Login
   [Arguments]  ${username}  ${tender_uaid}  ${bid}
   ${file_path}=  get_upload_file_path
   uace.Пошук тендера по ідентифікатору   ${username}  ${tender_uaid}
+  Wait Until Element Is Visible   xpath=//input[contains(@name, '[value][amount]')]
   ConvToStr And Input Text  xpath=//input[contains(@name, '[value][amount]')]  ${bid.data.value.amount}
   Choose File  name=FileUpload[file]  ${file_path}
   Select From List By Value  name=documents[0][documentType]  financialLicense
@@ -200,6 +201,7 @@ Login
   ${file_path}=  get_upload_file_path
   uace.Пошук тендера по ідентифікатору   ${username}  ${tender_uaid}
   uace.Скасувати цінову пропозицію  ${username}  ${tender_uaid}  ${EMPTY}
+  Wait Until Element Is Visible   xpath=//input[contains(@name, '[value][amount]')]
   ConvToStr And Input Text  xpath=//input[contains(@name, '[value][amount]')]  ${fieldvalue}
   Choose File  name=FileUpload[file]  ${file_path}
   Select From List By Value  name=documents[0][documentType]  financialLicense
@@ -214,6 +216,7 @@ Login
   uace.Пошук тендера по ідентифікатору   ${username}  ${tender_uaid}
   ${value}=  uace.Отримати інформацію із пропозиції  ${username}  ${tender_uaid}  ${EMPTY}
   uace.Скасувати цінову пропозицію  ${username}  ${tender_uaid}  ${EMPTY}
+  Wait Until Element Is Visible   xpath=//input[contains(@name, '[value][amount]')]
   ConvToStr And Input Text  xpath=//input[contains(@name, '[value][amount]')]  ${value}
   Choose File  name=FileUpload[file]  ${path}
   Select From List By Value  name=documents[0][documentType]  financialLicense
