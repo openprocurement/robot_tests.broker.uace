@@ -3,12 +3,13 @@
 
 from datetime import datetime
 from iso8601 import parse_date
+from pytz import timezone
 import os
-import urllib
 
-def subtract_from_time(date_time, subtr_min, subtr_sec):
-    sub = datetime.strptime(date_time, "%d/%m/%Y %H:%M:%S")
-    return str(sub).replace(' ', 'T') + '.000000+03:00'
+
+def convert_time(date):
+    date = datetime.strptime(date, "%d/%m/%Y %H:%M:%S")
+    return timezone('Europe/Kiev').localize(date).strftime('%Y-%m-%dT%H:%M:%S.%f%z')
 
 
 def convert_datetime_to_uace_format(isodate):
@@ -52,9 +53,9 @@ def adapt_view_data(value, field_name):
     elif 'quantity' in field_name:
         value = float(value.split(' ')[0])
     elif 'questions' in field_name and '.date' in field_name:
-        value = subtract_from_time(value.split(' - ')[0], 0, 0)
+        value = convert_time(value.split(' - ')[0])
     elif 'Date' in field_name:
-        value = subtract_from_time(value, 0, 0)
+        value = convert_time(value)
     return convert_string_from_dict_uace(value)
 
 
