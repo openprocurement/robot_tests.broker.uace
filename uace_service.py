@@ -30,6 +30,8 @@ def convert_string_from_dict_uace(string):
         u'Перiод уточнень': u'active.enquires',
         u'АУКЦIОН': u'active.auction',
         u'КВАЛIФIКАЦIЯ ПЕРЕМОЖЦЯ': u'active.qualification',
+        u'ТОРГИ ВІДМІНЕНО': u'unsuccessful',
+        u'ВIДМIНЕНА': u'active',
     }.get(string, string)
 
 
