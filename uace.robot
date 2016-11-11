@@ -309,10 +309,12 @@ Login
   Choose File  name=FileUpload[file]  ${file_path}
   Click Element  xpath=(//button[text()='Завантажити'])[2]
   Wait Until Keyword Succeeds  5 x  0.5 s  Click Element  xpath=//button[contains(@class, 'tender_contract_btn')]
-  Wait Until Element Is Visible  xpath=(//input[@name="Contract[0][contractNumber]"])[2]
+  Wait Until Element Is Visible  xpath=(//input[@name="Contract[0][contractNumber]"])[2]   30
   Input Text  xpath=(//input[@name="Contract[0][contractNumber]"])[2]  ${contract_num}
+  Sleep   5
   Choose Ok On Next Confirmation
   Click Element  xpath=(//button[text()='Активувати'])[2]
+  Sleep   60
   Confirm Action
 
 ###############################################################################################################
