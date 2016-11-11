@@ -87,16 +87,17 @@ Login
 Пошук тендера по ідентифікатору
   [Arguments]  ${username}  ${tenderID}
   Switch browser  ${username}
-  Wait Until Keyword Succeeds  30x  400ms  Перейти на сторінку з інформацією про тендер  ${tenderID}
+  Wait Until Keyword Succeeds  30 x  10 s  Перейти на сторінку з інформацією про тендер  ${tenderID}
 
 Перейти на сторінку з інформацією про тендер
   [Arguments]  ${tenderID}
   Go To  http://test-eauction.uace.com.ua/tenders/
   Input text  name=TendersSearch[tender_cbd_id]  ${tenderID}
   Click Element  xpath=//button[@class="btn btn-success top-buffer margin23"]
-  Wait Until Element Contains  xpath=//div[@class="summary"]/b[2]  1
-  Click Element  xpath=//h3[contains(text(),'${tenderID}')]/ancestor::div[@class="row"]/descendant::a[contains(@href,'/tender/view/')]
-  Wait Until Element Is Visible  xpath=//*[@tid="tenderID"]
+  Wait Until Keyword Succeeds  30x  400ms  Run Keywords
+  ...  Wait Until Element Contains  xpath=//div[@class="summary"]/b[2]  1
+  ...  AND  Click Element  xpath=//h3[contains(text(),'${tenderID}')]/ancestor::div[@class="row"]/descendant::a[contains(@href,'/tender/view/')]
+  ...  AND  Wait Until Element Is Visible  xpath=//*[@tid="tenderID"]
 
 Оновити сторінку з тендером
   [Arguments]  ${username}  ${tenderID}
