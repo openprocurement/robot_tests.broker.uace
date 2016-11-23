@@ -5,6 +5,7 @@ from datetime import datetime
 from iso8601 import parse_date
 from pytz import timezone
 import os
+import urllib
 
 
 def convert_time(date):
@@ -31,6 +32,7 @@ def convert_string_from_dict_uace(string):
         u'АУКЦIОН': u'active.auction',
         u'КВАЛIФIКАЦIЯ ПЕРЕМОЖЦЯ': u'active.qualification',
         u'ТОРГИ ВІДМІНЕНО': u'unsuccessful',
+        u'ЗАВЕРШЕНА': u'complete',
         u'ВIДМIНЕНА': u'active',
     }.get(string, string)
 
@@ -71,3 +73,7 @@ def adapt_view_item_data(value, field_name):
 
 def get_upload_file_path():
     return os.path.join(os.getcwd(), 'src/robot_tests.broker.uace/testFileForUpload.txt')
+
+
+def uace_download_file(url, file_name, output_dir):
+    urllib.urlretrieve(url, ('{}/{}'.format(output_dir, file_name)))
