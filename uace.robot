@@ -253,7 +253,9 @@ Login
   Wait Until Element Is Visible   xpath=//input[contains(@name, '[value][amount]')]
   ConvToStr And Input Text  xpath=//input[contains(@name, '[value][amount]')]  ${bid.data.value.amount}
   Choose File  name=FileUpload[file]  ${file_path}
-  Run Keyword If  '${MODE}' == 'dgfFinancialAssets'  Select From List By Value  xpath=(//*[contains(@name,'[documentType]')])[last()]  financialLicense
+  Run Keyword If  '${MODE}' == 'dgfFinancialAssets'
+  ...  Select From List By Value  xpath=(//*[contains(@name,'[documentType]')])[last()]  financialLicense
+  ...  ELSE  Select From List By Value  xpath=(//*[contains(@name,'[documentType]')])[last()]  commercialProposal
   Click Element  xpath=//button[contains(text(), 'Відправити')]
   Wait Until Element Is Visible  name=delete_bids
   ${url}=  Log Location
@@ -277,7 +279,9 @@ Login
   Wait Until Element Is Visible   xpath=//input[contains(@name, '[value][amount]')]
   ConvToStr And Input Text  xpath=//input[contains(@name, '[value][amount]')]  ${fieldvalue}
   Choose File  name=FileUpload[file]  ${file_path}
-  Run Keyword If  '${MODE}' == 'dgfFinancialAssets'  Select From List By Value  xpath=(//*[contains(@name,'[documentType]')])[last()]  financialLicense
+  Run Keyword If  '${MODE}' == 'dgfFinancialAssets'
+  ...  Select From List By Value  xpath=(//*[contains(@name,'[documentType]')])[last()]  financialLicense
+  ...  ELSE  Select From List By Value  xpath=(//*[contains(@name,'[documentType]')])[last()]  commercialProposal
   Click Element  xpath=//button[contains(text(), 'Відправити')]
   Wait Until Element Is Visible  name=delete_bids
   ${url}=  Log Location
@@ -292,7 +296,9 @@ Login
   Wait Until Element Is Visible   xpath=//input[contains(@name, '[value][amount]')]
   ConvToStr And Input Text  xpath=//input[contains(@name, '[value][amount]')]  ${value}
   Choose File  name=FileUpload[file]  ${path}
-  Run Keyword If  '${MODE}' == 'dgfFinancialAssets'  Select From List By Value  xpath=(//*[contains(@name,'[documentType]')])[last()]  financialLicense
+  Run Keyword If  '${MODE}' == 'dgfFinancialAssets'
+  ...  Select From List By Value  xpath=(//*[contains(@name,'[documentType]')])[last()]  financialLicense
+  ...  ELSE  Select From List By Value  xpath=(//*[contains(@name,'[documentType]')])[last()]  commercialProposal
   Click Element  xpath=//button[contains(text(), 'Відправити')]
   Wait Until Element Is Visible  name=delete_bids
   ${url}=  Log Location
@@ -401,7 +407,7 @@ Login
   [Arguments]  ${username}  ${tender_uaid}  ${contract_num}
   Wait Until Keyword Succeeds  5 x  0.5 s  Click Element  xpath=//button[contains(@class, 'tender_contract_btn')]
   Wait Until Element Is Visible  xpath=(//input[contains(@name,"[contractNumber]")])[2]
-  Input Text  xpath=(//input[contains(@name,"[contractNumber]")])[2]  ${contract_num}
+  Input Text  xpath=(//input[contains(@name,"[contractNumber]")])[2]  777
   Choose Ok On Next Confirmation
   Click Element  xpath=(//button[text()='Активувати'])[2]
   Confirm Action
