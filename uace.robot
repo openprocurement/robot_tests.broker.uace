@@ -18,7 +18,9 @@ Library  uace_service.py
   Open Browser  ${USERS.users['${username}'].homepage}  ${USERS.users['${username}'].browser}  alias=${username}
   Set Window Size  @{USERS.users['${username}'].size}
   Set Window Position  @{USERS.users['${username}'].position}
-  Run Keyword If  '${username}' != 'uace_Viewer_auction'  Login  ${username}
+  Run Keyword If  '${username}' != 'uace_Viewer_auction'  Run Keywords
+  ...  Login  ${username}
+  ...  AND  Run Keyword And Ignore Error  Wait Until Keyword Succeeds  10 x  1 s  Click Element  xpath=//button[@data-dismiss="modal"]
 
 Login
   [Arguments]  ${username}
@@ -157,7 +159,7 @@ Login
 Задати питання
   [Arguments]  ${username}  ${tender_uaid}  ${question}  ${item_id}=False
   uace.Пошук тендера по ідентифікатору  ${username}  ${tender_uaid}
-  Click Element  xpath=//a[contains(@href, '/questions')]
+  Click Element  xpath=//a[@tid="sidebar.questions"]
   ${status}  ${item_option}=   Run Keyword And Ignore Error   Get Text   //option[contains(text(), '${item_id}')]
   Run Keyword If  '${status}' == 'PASS'   Select From List By Label  name=Question[questionOf]  ${item_option}
   Input Text  name=Question[title]  ${question.data.title}
@@ -176,7 +178,7 @@ Login
 Відповісти на запитання
   [Arguments]  ${username}  ${tender_uaid}  ${answer_data}  ${question_id}
   uace.Пошук тендера по ідентифікатору  ${username}  ${tender_uaid}
-  Click Element  xpath=//a[contains(@href, '/questions')]
+  Click Element  xpath=//a[@tid="sidebar.questions"]
   Wait Until Element Is Visible  xpath=//h4[contains(text(),'${question_id}')]/../descendant::textarea[contains(@name,'[answer]')]
   Input text  xpath=//h4[contains(text(),'${question_id}')]/../descendant::textarea[contains(@name,'[answer]')]  ${answer_data.data.answer}
   Click Element  xpath=//h4[contains(text(),'${question_id}')]/following-sibling::button[@name="answer_question_submit"]
@@ -221,7 +223,7 @@ Login
 Отримати інформацію із запитання
   [Arguments]  ${username}  ${tender_uaid}  ${question_id}  ${field_name}
   uace.Пошук тендера по ідентифікатору  ${username}  ${tender_uaid}
-  Click Element  xpath=//a[contains(@href, '/questions')]
+  Click Element  xpath=//a[@tid="sidebar.questions"]
   ${value}=  Get Text  xpath=//h4[contains(text(),'${question_id}')]/../descendant::*[@tid='questions.${field_name}']
   [return]  ${value}
 
@@ -352,7 +354,7 @@ Login
 
 Отримати кількість документів в ставці
   [Arguments]  ${username}  ${tender_uaid}  ${bid_index}
-  Дочекатись синхронізації з майданчиком   ${username}
+#  Дочекатись синхронізації з майданчиком   ${username}
   uace.Пошук тендера по ідентифікатору   ${username}  ${tender_uaid}
   Wait Until Keyword Succeeds  15 x  1 m  Run Keywords
   ...  Reload Page
@@ -407,6 +409,7 @@ Login
 
 Підтвердити підписання контракту
   [Arguments]  ${username}  ${tender_uaid}  ${contract_num}
+  Перейти на сторінку кваліфікації учасників  ${username}  ${tender_uaid}
   Wait Until Keyword Succeeds  5 x  0.5 s  Click Element  xpath=//button[contains(@class, 'tender_contract_btn')]
   Wait Until Element Is Visible  xpath=(//input[contains(@name,"[contractNumber]")])[2]
   Input Text  xpath=(//input[contains(@name,"[contractNumber]")])[2]  777
