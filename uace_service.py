@@ -33,7 +33,8 @@ def convert_string_from_dict_uace(string):
         u'КВАЛIФIКАЦIЯ ПЕРЕМОЖЦЯ': u'active.qualification',
         u'ТОРГИ ВІДМІНЕНО': u'unsuccessful',
         u'ЗАВЕРШЕНА': u'complete',
-        u'ВIДМIНЕНА': u'active',
+        u'ВIДМIНЕНА': u'cancelled',
+        u'Торги були відмінені.': u'active',
     }.get(string, string)
 
 

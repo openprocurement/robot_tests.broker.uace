@@ -142,13 +142,13 @@ Login
   uace.Пошук тендера по ідентифікатору  ${username}  ${tender_uaid}
   Click Element  xpath=//a[contains(@href,'/tender/cancel/')]
   Select From List By Value  id=cancellation-relatedlot  tender
-  Input Text  id=cancellation-reason  ${cancellation_reason}
+  Select From List By Value  id=cancellation-reason  ${cancellation_reason}
   Choose File  name=FileUpload[file]  ${document}
   Wait Until Element Is Visible  name=Tender[cancellations][documents][0][title]
   Input Text  name=Tender[cancellations][documents][0][title]  ${document.replace('/tmp/', '')}
   Click Element  xpath=//button[@type="submit"]
   Wait Until Element Is Visible  xpath=//div[contains(@class,'alert-success')]
-  Wait Until Keyword Succeeds  30 x  1 m  Звірити статус тендера  ${username}  ${tender_uaid}  active
+  Wait Until Keyword Succeeds  30 x  1 m  Звірити статус тендера  ${username}  ${tender_uaid}  cancelled
 
 ###############################################################################################################
 ############################################    ПИТАННЯ    ####################################################
@@ -201,8 +201,10 @@ Login
 Отримати інформацію про статус
   [Arguments]  ${field_name}
   Click Element   xpath=//a[text()='Інформація про аукціон']
-  ${status}=  Get Text  xpath=//h2[@tid="${field_name.split('.')[-1]}"]
-  [return]  ${status}
+  ${value}=  Run Keyword If  'cancellations' in '${field_name}'
+  ...  Get Text  xpath=//div[contains(@class,'alert-danger')]/h3[1]
+  ...  ELSE  Get Text  xpath=//h2[@tid="${field_name.split('.')[-1]}"]
+  [return]  ${value}
 
 Отримати інформацію із предмету
   [Arguments]  ${username}  ${tender_uaid}  ${item_id}  ${field_name}
