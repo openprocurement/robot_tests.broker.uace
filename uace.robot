@@ -20,7 +20,11 @@ Library  uace_service.py
   Set Window Position  @{USERS.users['${username}'].position}
   Run Keyword If  '${username}' != 'uace_Viewer_auction'  Run Keywords
   ...  Login  ${username}
-  ...  AND  Run Keyword And Ignore Error  Wait Until Keyword Succeeds  10 x  1 s  Click Element  xpath=//button[@data-dismiss="modal"]
+  ...  AND  Run Keyword And Ignore Error  Wait Until Keyword Succeeds  10 x  1 s  Закрити модалку з новинами
+
+Закрити модалку з новинами
+  Wait Until Element Is Enabled   xpath=//button[@data-dismiss="modal"]
+  Click Element   xpath=//button[@data-dismiss="modal"]
 
 Login
   [Arguments]  ${username}
@@ -119,7 +123,6 @@ Login
 
 Перейти на сторінку з інформацією про тендер
   [Arguments]  ${tender_uaid}
-  Wait Until Element Contains  xpath=//div[@class="summary"]/b[2]  1
   Click Element  xpath=//h3[contains(text(),'${tender_uaid}')]/ancestor::div[@class="row"]/descendant::a[contains(@href,'/tender/view/')]
   Wait Until Element Is Visible  xpath=//*[@tid="tenderID"]
 
@@ -267,7 +270,9 @@ Login
   ...  Go To  http://test-eauction.uace.com.ua/bids/decline/${url.split('?')[0].split('/')[-1]}
   ...  ELSE  Go To  http://test-eauction.uace.com.ua/bids/send/${url.split('?')[0].split('/')[-1]}
   Go To  ${url}
-  Page Should Contain  Статус - опублiковано
+  Wait Until Keyword Succeeds  6 x  30 s  Run Keywords
+  ...  Reload Page
+  ...  AND  Page Should Contain  Статус - опублiковано
 
 Скасувати цінову пропозицію
   [Arguments]  ${username}  ${tender_uaid}
@@ -356,11 +361,17 @@ Login
   [Arguments]  ${username}  ${tender_uaid}  ${bid_index}
 #  Дочекатись синхронізації з майданчиком   ${username}
   uace.Пошук тендера по ідентифікатору   ${username}  ${tender_uaid}
-  Wait Until Keyword Succeeds  15 x  1 m  Run Keywords
-  ...  Reload Page
-  ...  AND  Wait Until Element Is Visible  xpath=//a[text()='Таблиця квалiфiкацiї']
-  ...  AND  Click Element  xpath=//a[text()='Таблиця квалiфiкацiї']
-  ...  AND  Wait Until Page Contains  auctionProtocol
+  ${disqualification_status}=  Run Keyword And Return Status  Page Should Not Contain  Дисквалiфiковано
+  Run Keyword If  ${disqualification_status}  Wait Until Keyword Succeeds  15 x  1 m  Run Keywords
+  ...    Reload Page
+  ...    AND  Wait Until Element Is Visible  xpath=//a[text()='Таблиця квалiфiкацiї']
+  ...    AND  Click Element  xpath=//a[text()='Таблиця квалiфiкацiї']
+  ...    AND  Wait Until Page Contains  auctionProtocol
+  ...  ELSE  Wait Until Keyword Succeeds  15 x  1 m  Run Keywords
+  ...    Reload Page
+  ...    AND  Wait Until Element Is Visible  xpath=//a[text()='Таблиця квалiфiкацiї']
+  ...    AND  Click Element  xpath=//a[text()='Таблиця квалiфiкацiї']
+  ...    AND  Xpath Should Match X Times  //*[contains(text(),'auctionProtocol')]  2
   ${bid_doc_number}=   Get Matching Xpath Count   //td[contains(text(),'На розглядi ')]/../following-sibling::tr[2]/descendant::div[@class="bid_document_block"]/table/tbody/tr
   [return]  ${bid_doc_number}
 
@@ -409,13 +420,14 @@ Login
 
 Підтвердити підписання контракту
   [Arguments]  ${username}  ${tender_uaid}  ${contract_num}
-  Перейти на сторінку кваліфікації учасників  ${username}  ${tender_uaid}
+  Перейти на сторінку кваліфікації учасників   ${username}  ${tender_uaid}
   Wait Until Keyword Succeeds  5 x  0.5 s  Click Element  xpath=//button[contains(@class, 'tender_contract_btn')]
   Wait Until Element Is Visible  xpath=(//input[contains(@name,"[contractNumber]")])[2]
-  Input Text  xpath=(//input[contains(@name,"[contractNumber]")])[2]  777
-  Choose Ok On Next Confirmation
-  Click Element  xpath=(//button[text()='Активувати'])[2]
-  Confirm Action
+  Wait Until Keyword Succeeds  5 x  1 s  Run Keywords
+  ...  Input Text  xpath=(//input[contains(@name,"[contractNumber]")])[2]  777
+  ...  AND  Choose Ok On Next Confirmation
+  ...  AND  Click Element  xpath=(//button[text()='Активувати'])[2]
+  ...  AND  Confirm Action
 
 ###############################################################################################################
 
