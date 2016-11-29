@@ -25,6 +25,7 @@ Library  uace_service.py
 Закрити модалку з новинами
   Wait Until Element Is Enabled   xpath=//button[@data-dismiss="modal"]
   Click Element   xpath=//button[@data-dismiss="modal"]
+  Wait Until Element Is Not Visible  xpath=//button[@data-dismiss="modal"]
 
 Login
   [Arguments]  ${username}
@@ -361,16 +362,14 @@ Login
   [Arguments]  ${username}  ${tender_uaid}  ${bid_index}
 #  Дочекатись синхронізації з майданчиком   ${username}
   uace.Пошук тендера по ідентифікатору   ${username}  ${tender_uaid}
-  ${disqualification_status}=  Run Keyword And Return Status  Page Should Not Contain  Дисквалiфiковано
+  Wait Until Element Is Visible  xpath=//a[text()='Таблиця квалiфiкацiї']
+  Click Element  xpath=//a[text()='Таблиця квалiфiкацiї']
+  ${disqualification_status}=  Run Keyword And Return Status  Wait Until Page Does Not Contain Element  xpath=//*[contains(text(),'Дисквалiфiковано')]  10
   Run Keyword If  ${disqualification_status}  Wait Until Keyword Succeeds  15 x  1 m  Run Keywords
   ...    Reload Page
-  ...    AND  Wait Until Element Is Visible  xpath=//a[text()='Таблиця квалiфiкацiї']
-  ...    AND  Click Element  xpath=//a[text()='Таблиця квалiфiкацiї']
   ...    AND  Wait Until Page Contains  auctionProtocol
   ...  ELSE  Wait Until Keyword Succeeds  15 x  1 m  Run Keywords
   ...    Reload Page
-  ...    AND  Wait Until Element Is Visible  xpath=//a[text()='Таблиця квалiфiкацiї']
-  ...    AND  Click Element  xpath=//a[text()='Таблиця квалiфiкацiї']
   ...    AND  Xpath Should Match X Times  //*[contains(text(),'auctionProtocol')]  2
   ${bid_doc_number}=   Get Matching Xpath Count   //td[contains(text(),'На розглядi ')]/../following-sibling::tr[2]/descendant::div[@class="bid_document_block"]/table/tbody/tr
   [return]  ${bid_doc_number}
