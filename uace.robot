@@ -1,5 +1,7 @@
 *** Settings ***
-Library  Selenium2Screenshots
+Library  Selenium2Library
+Library  BuiltIn
+Library  Collections
 Library  String
 Library  DateTime
 Library  uace_service.py
@@ -41,11 +43,14 @@ Login
 Створити тендер
   [Arguments]  ${username}  ${tender_data}
   ${items}=  Get From Dictionary  ${tender_data.data}  items
+  ${number_of_items}=  Get Length  ${items}
+  ${tenderAttempts}=   Convert To String   ${tender_data.data.tenderAttempts}
   Switch Browser  ${username}
   Wait Until Page Contains Element  xpath=//a[@href="http://test-eauction.uace.com.ua/tenders"]  10
   Click Element  xpath=//a[@href="http://test-eauction.uace.com.ua/tenders"]
   Click Element  xpath=//a[@href="http://test-eauction.uace.com.ua/tenders/index"]
   Click Element  xpath=//a[contains(@href,"http://test-eauction.uace.com.ua/buyer/tender/create")]
+  Select From List By Value  name=tender_method  open_${tender_data.data.procurementMethodType}
   Conv And Select From List By Value  name=Tender[value][valueAddedTaxIncluded]  ${tender_data.data.value.valueAddedTaxIncluded}
   ConvToStr And Input Text  name=Tender[value][amount]  ${tender_data.data.value.amount}
   ConvToStr And Input Text  name=Tender[minimalStep][amount]  ${tender_data.data.minimalStep.amount}
@@ -53,8 +58,13 @@ Login
   Input text  name=Tender[title]  ${tender_data.data.title}
   Input text  name=Tender[dgfID]  ${tender_data.data.dgfID}
   Input text  name=Tender[description]  ${tender_data.data.description}
+  Input text  name=Tender[dgfDecisionID]  ${tender_data.data.dgfDecisionID}
+  Select From List By Value  name=Tender[tenderAttempts]  ${tenderAttempts}
+  Input Date  name=Tender[dgfDecisionDate]  ${tender_data.data.dgfDecisionDate}
   Input Date  name=Tender[auctionPeriod][startDate]  ${tender_data.data.auctionPeriod.startDate}
-  Додати предмет  ${items[0]}  0
+  :FOR  ${index}  IN RANGE  ${number_of_items}
+  \  Run Keyword If  ${index} != 0  Click Element  xpath=(//button[contains(@class,'add_item')])[last()]
+  \  Додати предмет  ${items[${index}]}  ${index}
   Click Element  xpath= //button[@class="btn btn-default btn_submit_form"]
   Wait Until Page Contains Element  xpath=//b[@tid="tenderID"]  10
   ${tender_uaid}=  Get Text  xpath=//b[@tid="tenderID"]
@@ -80,13 +90,25 @@ Login
   Input text  name=Tender[items][${index}][address][postalCode]  ${item.deliveryAddress.postalCode}
   Select From List By Value  name=Tender[procuringEntity][contactPoint][fio]  79
 
+Додати предмет закупівлі
+  [Arguments]  ${username}  ${tender_uaid}  ${item}
+  uace.Пошук тендера по ідентифікатору  ${username}  ${tender_uaid}
+  Click Element  xpath=//a[contains(text(),'Редагувати')]
+  Run Keyword And Ignore Error  Click Element  xpath=(//button[contains(@class,'add_item')])[last()]
+
+Видалити предмет закупівлі
+  [Arguments]  ${username}  ${tender_uaid}  ${item_id}
+  uace.Пошук тендера по ідентифікатору  ${username}  ${tender_uaid}
+  Click Element  xpath=//a[contains(text(),'Редагувати')]
+  Run Keyword And Ignore Error  Click Element  xpath=(//button[contains(@class,'delete_item')])[last()]
+
 Завантажити документ
   [Arguments]  ${username}  ${filepath}  ${tender_uaid}  ${illustration}=False
   Switch Browser  ${username}
   uace.Пошук тендера по ідентифікатору  ${username}  ${tender_uaid}
   Click Element  xpath=//a[contains(text(),'Редагувати')]
   Choose File  xpath=(//*[@name="FileUpload[file]"])[last()]  ${filepath}
-  Run Keyword If   ${illustration}   Select From List By Value   xpath=//label[text()='${filepath.split('/')[-1]}']/../../descendant::*[contains(@name,"[documentType]")]   illustration
+  Select From List By Value   xpath=//label[text()='${filepath.split('/')[-1]}']/../../descendant::*[contains(@name,"[documentType]")]   illustration
   Input Text  xpath=//label[text()='${filepath.split('/')[-1]}']/../../descendant::input[contains(@name,'[title]')]   ${filepath.split('/')[-1]}
   Click Button  xpath=//button[@class="btn btn-default btn_submit_form"]
   Wait Until Element Is Not Visible   xpath=//button[@class="btn btn-default btn_submit_form"]
@@ -110,6 +132,34 @@ Login
   Wait Until Element Is Visible  xpath=(//input[contains(@name,'[url]')])[last()]
   Input Text  xpath=(//input[contains(@name,'[url]')])[last()]  ${vdr_url}
   Click Button  xpath=//button[@class="btn btn-default btn_submit_form"]
+
+Завантажити документ в тендер з типом
+  [Arguments]  ${username}  ${tender_uaid}  ${filepath}  ${documentType}
+  Switch Browser  ${username}
+  uace.Пошук тендера по ідентифікатору  ${username}  ${tender_uaid}
+  Click Element  xpath=//a[contains(text(),'Редагувати')]
+  Choose File  xpath=(//*[@name="FileUpload[file]"])[last()]  ${filepath}
+  Select From List By Value   xpath=//label[text()='${filepath.split('/')[-1]}']/../../descendant::*[contains(@name,"[documentType]")]   ${documentType}
+  Input Text  xpath=//label[text()='${filepath.split('/')[-1]}']/../../descendant::input[contains(@name,'[title]')]   ${filepath.split('/')[-1]}
+  Click Button  xpath=//button[@class="btn btn-default btn_submit_form"]
+  Wait Until Element Is Not Visible   xpath=//button[@class="btn btn-default btn_submit_form"]
+  Дочекатися завантаження документу
+
+Додати публічний паспорт активу
+  [Arguments]  ${username}  ${tender_uaid}  ${certificate_url}  ${title}=Public Asset Certificate
+  uace.Пошук тендера по ідентифікатору   ${username}   ${tender_uaid}
+  Click Element  xpath=//a[contains(text(),'Редагувати')]
+  Click Element  id=addPublicCertificate
+  Wait Until Element Is Visible  xpath=(//div[contains(@class, 'certificate_block')]/descendant::input[contains(@name,'[url]')])[last()]
+  Input Text  xpath=(//div[contains(@class,'certificate_block')]/descendant::input[contains(@name,'[url]')])[last()]  ${certificate_url}
+
+Додати офлайн документ
+  [Arguments]  ${username}  ${tender_uaid}  ${accessDetails}  ${title}=Familiarization with bank asset
+  uace.Пошук тендера по ідентифікатору   ${username}   ${tender_uaid}
+  Click Element  xpath=//a[contains(text(),'Редагувати')]
+  Click Element  id=addDocWtDoc
+  Wait Until Element Is Visible  xpath=(//div[contains(@class, 'docwdoc_block')]/descendant::textarea[contains(@name,'[accessDetails]')])[last()]
+  Input Text  xpath=(//div[contains(@class,'docwdoc_block')]/descendant::textarea[contains(@name,'[accessDetails]')])[last()]  ${accessDetails}
 
 Пошук тендера по ідентифікатору
   [Arguments]  ${username}  ${tender_uaid}
@@ -163,6 +213,7 @@ Login
 Задати питання
   [Arguments]  ${username}  ${tender_uaid}  ${question}  ${item_id}=False
   uace.Пошук тендера по ідентифікатору  ${username}  ${tender_uaid}
+  Wait Until Element Is Enabled  xpath=//a[@tid="sidebar.questions"]
   Click Element  xpath=//a[@tid="sidebar.questions"]
   ${status}  ${item_option}=   Run Keyword And Ignore Error   Get Text   //option[contains(text(), '${item_id}')]
   Run Keyword If  '${status}' == 'PASS'   Select From List By Label  name=Question[questionOf]  ${item_option}
@@ -182,6 +233,7 @@ Login
 Відповісти на запитання
   [Arguments]  ${username}  ${tender_uaid}  ${answer_data}  ${question_id}
   uace.Пошук тендера по ідентифікатору  ${username}  ${tender_uaid}
+  Wait Until Element Is Enabled  xpath=//a[@tid="sidebar.questions"]
   Click Element  xpath=//a[@tid="sidebar.questions"]
   Wait Until Element Is Visible  xpath=//h4[contains(text(),'${question_id}')]/../descendant::textarea[contains(@name,'[answer]')]
   Input text  xpath=//h4[contains(text(),'${question_id}')]/../descendant::textarea[contains(@name,'[answer]')]  ${answer_data.data.answer}
@@ -199,6 +251,8 @@ Login
   ...  'status' in '${field_name}'  Отримати інформацію про статус  ${field_name}
   ...  ELSE IF  'value' in '${field_name}'  Get Text  xpath=//*[@tid="value.amount"]
   ...  ELSE IF  '${field_name}' == 'auctionPeriod.startDate'  Get Text  xpath=(//*[@tid="tenderPeriod.endDate"])[2]
+  ...  ELSE IF  '${field_name}' == 'dgfDecisionDate'  Get Element Attribute  xpath=//*[@tid="dgfDecisionDate"]@data-ddate
+  ...  ELSE IF  '${field_name}' == 'tenderAttempts'  Get Element Attribute  xpath=//*[@tid="tenderAttempts"]@at_count
   ...  ELSE IF  'cancellations' in '${field_name}'  Get Text  xpath=//*[@tid="${field_name.replace('[0]','')}"]
   ...  ELSE  Get Text  xpath=//*[@tid="${field_name.replace('auction', 'tender')}"]
   ${value}=  adapt_view_data  ${value}  ${field_name}
@@ -224,9 +278,16 @@ Login
   ${value}=  adapt_view_item_data  ${value}  ${field_name}
   [return]  ${value}
 
+Отримати кількість предметів в тендері
+  [Arguments]  ${username}  ${tender_uaid}
+  uace.Пошук тендера по ідентифікатору   ${username}   ${tender_uaid}
+  ${number_of_items}=  Get Matching Xpath Count  //div[@class="item no_border"]
+  [return]  ${number_of_items}
+
 Отримати інформацію із запитання
   [Arguments]  ${username}  ${tender_uaid}  ${question_id}  ${field_name}
   uace.Пошук тендера по ідентифікатору  ${username}  ${tender_uaid}
+  Wait Until Element Is Enabled  xpath=//a[@tid="sidebar.questions"]
   Click Element  xpath=//a[@tid="sidebar.questions"]
   ${value}=  Get Text  xpath=//h4[contains(text(),'${question_id}')]/../descendant::*[@tid='questions.${field_name}']
   [return]  ${value}
@@ -249,13 +310,26 @@ Login
   uace_download_file   ${url}  ${file_name}  ${OUTPUT_DIR}
   [return]  ${file_name}
 
+Отримати кількість документів в тендері
+  [Arguments]  ${username}  ${tender_uaid}
+  uace.Пошук тендера по ідентифікатору  ${username}  ${tender_uaid}
+  ${number_of_documents}=  Get Matching Xpath Count  //div[@class="document"]
+  [return]  ${number_of_documents}
+
+Отримати інформацію із документа по індексу
+  [Arguments]  ${username}  ${tender_uaid}  ${document_index}  ${field}
+  uace.Пошук тендера по ідентифікатору  ${username}  ${tender_uaid}
+  ${doc_value}=  Get Text  xpath=(//div[@class="document"])[${document_index + 1}]/div[2]/div[2]/b/i
+  ${doc_value}=  convert_string_from_dict_uace  ${doc_value}
+  [return]  ${doc_value}
+
 ###############################################################################################################
 #######################################    ПОДАННЯ ПРОПОЗИЦІЙ    ##############################################
 ###############################################################################################################
 
 Подати цінову пропозицію
   [Arguments]  ${username}  ${tender_uaid}  ${bid}
-  ${status}=  Run Keyword And Return Status  Dictionary Should Contain Key  ${bid['data']}  qualified
+  ${status}=  Get From Dictionary  ${bid['data']}  qualified
   ${file_path}=  get_upload_file_path
   uace.Пошук тендера по ідентифікатору   ${username}  ${tender_uaid}
   Wait Until Element Is Visible   xpath=//input[contains(@name, '[value][amount]')]
@@ -268,8 +342,8 @@ Login
   Wait Until Element Is Visible  name=delete_bids
   ${url}=  Log Location
   Run Keyword If  ${status}
-  ...  Go To  http://test-eauction.uace.com.ua/bids/decline/${url.split('?')[0].split('/')[-1]}
-  ...  ELSE  Go To  http://test-eauction.uace.com.ua/bids/send/${url.split('?')[0].split('/')[-1]}
+  ...  Go To  http://test-eauction.uace.com.ua/bids/send/${url.split('?')[0].split('/')[-1]}
+  ...  ELSE  Go To  http://test-eauction.uace.com.ua/bids/decline/${url.split('?')[0].split('/')[-1]}
   Go To  ${url}
   Wait Until Keyword Succeeds  6 x  30 s  Run Keywords
   ...  Reload Page
