@@ -35,6 +35,19 @@ def convert_string_from_dict_uace(string):
         u'ЗАВЕРШЕНА': u'complete',
         u'ВIДМIНЕНА': u'cancelled',
         u'Торги були відмінені.': u'active',
+        u'Юридична Інформація Майданчиків': u'x_dgfPlatformLegalDetails',
+        u'Презентація': u'x_presentation',
+        u'Договір про нерозголошення (NDA)': u'x_nda',
+        u'Публічний Паспорт Активу': u'x_dgfPublicAssetCertificate',
+        u'Технічні специфікації': u'x_technicalSpecifications',
+        u'Паспорт торгів': u'x_tenderNotice',
+        u'Повідомлення про аукціон': u'notice',
+        u'Ілюстрації': u'illustration',
+        u'Критерії оцінки': u'evaluationCriteria',
+        u'Пояснення до питань заданих учасниками': u'clarifications',
+        u'Інформація про учасників': u'bidders',
+        u'Право вимоги за кредитами': u'dgfFinancialAssets',
+        u'Продаж майна банків': u'dgfOtherAssets',
     }.get(string, string)
 
 
@@ -53,12 +66,16 @@ def adapt_view_data(value, field_name):
         value = ' '.join(value.split(' ')[2:])
     elif field_name == 'minimalStep.amount':
         value = float(value.split(' ')[0])
+    elif field_name == 'tenderAttempts':
+        value = int(value)
     elif 'unit.name' in field_name:
         value = value.split(' ')[1]
     elif 'quantity' in field_name:
         value = float(value.split(' ')[0])
     elif 'questions' in field_name and '.date' in field_name:
         value = convert_time(value.split(' - ')[0])
+    elif field_name == 'dgfDecisionDate':
+        return value
     elif 'Date' in field_name:
         value = convert_time(value)
     return convert_string_from_dict_uace(value)
