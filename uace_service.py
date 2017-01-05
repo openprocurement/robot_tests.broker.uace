@@ -46,8 +46,8 @@ def convert_string_from_dict_uace(string):
         u'Критерії оцінки': u'evaluationCriteria',
         u'Пояснення до питань заданих учасниками': u'clarifications',
         u'Інформація про учасників': u'bidders',
-        u'Право вимоги за кредитами': u'dgfFinancialAssets',
-        u'Продаж майна банків': u'dgfOtherAssets',
+        u'прав вимоги за кредитами': u'dgfFinancialAssets',
+        u'майна банків': u'dgfOtherAssets',
     }.get(string, string)
 
 
