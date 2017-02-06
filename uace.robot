@@ -165,12 +165,13 @@ Login
 Пошук тендера по ідентифікатору
   [Arguments]  ${username}  ${tender_uaid}
   Switch browser  ${username}
-  Go To  http://test-eauction.uace.com.ua
-  Click Element  xpath=//a[@href="http://test-eauction.uace.com.ua/tenders"]
-  Click Element  xpath=//a[@href="http://test-eauction.uace.com.ua/tenders/index"]
+  Go To  http://test-eauction.uace.com.ua/tenders/index
+  ${status}=  Run Keyword And Return Status  Wait Until Element Is Visible  xpath=//button[@data-dismiss="modal"]  5
+  Run Keyword If  ${status}  Wait Until Keyword Succeeds  10 x  1 s  Закрити модалку з новинами
   Wait Until Element Is Visible  id=more-filter
-  Click Element  id=more-filter
-  Wait Until Keyword Succeeds  10 x  0.4 s  Element Should Be Visible  name=TendersSearch[tender_cbd_id]
+  Wait Until Keyword Succeeds  10 x  0.4 s  Run Keywords
+  ...  Click Element  id=more-filter
+  ...  AND  Wait Until Element Is Visible  name=TendersSearch[tender_cbd_id]
   Input text  name=TendersSearch[tender_cbd_id]  ${tender_uaid}
   Click Element  xpath=//button[@tid="search"]
   Wait Until Keyword Succeeds  30x  400ms  Перейти на сторінку з інформацією про тендер  ${tender_uaid}
@@ -267,7 +268,7 @@ Login
   ${value}=  Run Keyword If  'cancellations' in '${field_name}'
   ...  Get Text  xpath=//div[contains(@class,'alert-danger')]/h3[1]
   ...  ELSE  Get Text  xpath=//h2[@tid="${field_name.split('.')[-1]}"]
-  [return]  ${value}
+  [return]  ${value.lower()}
 
 Отримати інформацію із предмету
   [Arguments]  ${username}  ${tender_uaid}  ${item_id}  ${field_name}
@@ -357,6 +358,9 @@ Login
   uace.Пошук тендера по ідентифікатору   ${username}  ${tender_uaid}
   Execute Javascript  window.confirm = function(msg) { return true; }
   Click Element  xpath=//button[@name="delete_bids"]
+  Wait Until Element Is Visible  xpath=//button[@data-bb-handler="confirm"]
+  Click Element  xpath=//button[@data-bb-handler="confirm"]
+  Wait Until Element Is Visible  xpath=//input[contains(@name, '[value][amount]')]
 
 Змінити цінову пропозицію
   [Arguments]  ${username}  ${tender_uaid}  ${fieldname}  ${fieldvalue}
@@ -491,13 +495,23 @@ Login
   [Arguments]  ${username}  ${tender_uaid}  ${contract_num}  ${filepath}
   Перейти на сторінку кваліфікації учасників   ${username}  ${tender_uaid}
   Click Element  xpath=//button[contains(@class, 'tender_contract_btn')]
+  Wait Until Element Is Visible  xpath=(//*[contains(@id,"contract_form")])[last()]  10
   Choose File  name=FileUpload[file]  ${filepath}
   Click Element  xpath=(//button[text()='Завантажити'])[2]
-
+  Wait Until Keyword Succeeds  15 x  60 s  Run Keywords
+  ...  Reload Page
+  ...  AND  Wait Until Element Is Visible  xpath=//button[contains(@class, 'tender_contract_btn')]
+  ...  AND  Click Element  xpath=//button[contains(@class, 'tender_contract_btn')]
+  ...  AND  Page Should Not Contain  Документ завантажується...
+  Reload Page
 
 Підтвердити підписання контракту
   [Arguments]  ${username}  ${tender_uaid}  ${contract_num}
   Перейти на сторінку кваліфікації учасників   ${username}  ${tender_uaid}
+  ${filepath}=  get_upload_file_path
+  Wait Until Keyword Succeeds  5 x  0.5 s  Click Element  xpath=//button[contains(@class, 'tender_contract_btn')]
+  ${status}=  Run Keyword And Return Status  Wait Until Element Is Visible  (//input[contains(@name,"[contractNumber]")])[2]  5
+  Run Keyword If  not ${status}  uace.Завантажити угоду до тендера  ${username}  ${tender_uaid}  ${contract_num}  ${filepath}
   Wait Until Keyword Succeeds  5 x  0.5 s  Click Element  xpath=//button[contains(@class, 'tender_contract_btn')]
   Wait Until Element Is Visible  xpath=(//input[contains(@name,"[contractNumber]")])[2]
   Wait Until Keyword Succeeds  5 x  1 s  Run Keywords
