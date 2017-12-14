@@ -75,7 +75,7 @@ def adapt_procuringEntity(role_name, tender_data):
 def adapt_view_data(value, field_name):
     if field_name == 'value.amount':
         value = float(value)
-    elif field_name == 'minimalStep.amount' or field_name == 'guarantee.amount':
+    elif field_name in ('minimalStep.amount', 'guarantee.amount'):
         value = float(value.split(' ')[0])
     elif field_name == 'tenderAttempts':
         value = int(value)
