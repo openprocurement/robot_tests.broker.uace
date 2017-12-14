@@ -78,8 +78,9 @@ Login
 Додати предмет
   [Arguments]  ${item}  ${index}
   ${index}=  Convert To Integer  ${index}
+  ${quantity}=  Convert To String  ${item.quantity}
   Input text  name=Tender[items][${index}][description]  ${item.description}
-  Input text  name=Tender[items][${index}][quantity]  ${item.quantity}
+  Input text  name=Tender[items][${index}][quantity]  ${quantity}
   Select From List By Label  xpath=(//*[@id="classification-scheme"])[last()]  ${item.classification.scheme}
   Click Element  name=Tender[items][${index}][classification][description]
   Wait Until Element Is Visible  id=search_code   30
