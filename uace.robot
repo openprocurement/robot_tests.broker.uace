@@ -541,6 +541,8 @@ Login
 Дискваліфікувати постачальника
   [Arguments]  ${username}  ${tender_uaid}  ${award_num}  ${description}
   ${document}=  get_upload_file_path
+  Run Keyword If  """Відображення статусу 'оплачено, очікується підписання договору'""" not in """${PREV TEST NAME}"""
+  ...  Wait Until Keyword Succeeds  10 x  60 s  Звірити статус тендера  ${username}  ${tender_uaid}  active.qualification
   Перейти на сторінку кваліфікації учасників  ${username}  ${tender_uaid}
   Click Element  xpath=//*[contains(@id, "modal-disqualification")]
   Дочекатися І Клікнути  xpath=(//input[@name="Award[cause][]"])[1]/..
@@ -569,6 +571,7 @@ Login
   Wait Until Keyword Succeeds  10 x  1 s  Element Should Be Visible  xpath=//button[contains(@class, "delete_file")]
   Input Text  id=contract-contractnumber  777
   Click Element  id=contract-fill-data
+  Wait Until Keyword Succeeds  10 x  1 s  Page Should Contain  Кнопка "Завершити електронні торги" з'явиться після закінчення завантаження даних та оновлення сторінки
   Wait Until Keyword Succeeds  10 x  60 s  Run Keywords
   ...  Reload Page
   ...  AND  Element Should Be Visible  id=contract-activate
