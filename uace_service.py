@@ -76,11 +76,14 @@ def adapted_dictionary(value):
         u'Класифікація згідно CAV-PS': 'CAV-PS',
         u'Класифікація згідно CPV': 'CPV',
         u'Аукцiон': 'active.auction',
+        u'Аукціон': 'active.auction',
+        u'Очiкування пропозицiй': 'active.tendering',
         u'Торги не відбулися': 'unsuccessful',
         u'Продаж завершений': 'complete',
         u'Торги скасовано': 'cancelled',
         u'об’єкт реєструється': u'registering',
         u'об’єкт зареєстровано': u'complete',
+        u'Об’єкт зареєстровано': u'complete',
         u'Опубліковано': u'pending',
         u'Актив завершено': u'complete',
         u'Публікація інформаційного повідомлення': u'composing',
@@ -88,6 +91,7 @@ def adapted_dictionary(value):
         u'lot.status.pending.deleted': u'pending.deleted',
         u'Лот видалено': u'deleted',
         u'Інформація': u'informationDetails',
+        u'open_sellout.english_2': u'sellout.english',
         u'Заплановано': u'scheduled'
     }.get(value, value)
 
@@ -100,6 +104,8 @@ def adapt_data(field, value):
     elif field == 'minimalStep.amount':
         value = float(value.split(' ')[0])
     elif field == 'guarantee.amount':
+        value = float(value.split(' ')[0])
+    elif field == 'registrationFee.amount':
         value = float(value.split(' ')[0])
     elif field == 'quantity':
         value = float(value.replace(',', '.'))
@@ -153,6 +159,13 @@ def adapt_lot_data(field, value):
         value = int(value)
     else:
         value = adapted_dictionary(value)
+    return value
+
+
+def adapt_edrpou(value):
+    value = str(value)
+    if len(value) == 7:
+        value += '0'
     return value
 
 
