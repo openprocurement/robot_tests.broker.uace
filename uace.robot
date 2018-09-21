@@ -81,13 +81,11 @@ ${host}  http://test-eauction.uace.com.ua
     ${item_number}=  Set Variable  ${item_number.split('-')[-1]}
     Input Text  xpath=//*[@id="asset-${item_number}-description"]  ${item_data.description}
     Convert Input Data To String  xpath=//*[@id="asset-${item_number}-quantity"]  ${item_data.quantity}
-    ${classification_scheme}=  Convert To Lowercase  ${item_data.classification.scheme}
-    Select From List By Value  //div[contains(@class, "asset-item-${item_number}")]/descendant::select[@id="classification-scheme"]  ${classification_scheme}
     Click Element  xpath=//*[@id="classification-${item_number}-description"]
     Wait Until Element Is Visible  xpath=//*[@class="modal-title"]
     Input Text  xpath=//*[@placeholder="Пошук по коду"]  ${item_data.classification.id}
-    Wait Until Element Is Visible  xpath=//*[@id="${item_data.classification.id}"]
-    Scroll To And Click Element  xpath=//*[@id="${item_data.classification.id}"]
+    Wait Until Element Is Visible  xpath=//*[contains(@id,"${item_data.classification.id}")][last()]
+    Scroll To And Click Element  xpath=//*[contains(@id,"${item_data.classification.id}")][last()]
     Wait Until Element Is Enabled  xpath=//button[@id="btn-ok"]
     Click Element  xpath=//button[@id="btn-ok"]
     Wait Until Element Is Not Visible  xpath=//*[@class="fade modal"]
@@ -121,6 +119,7 @@ ${host}  http://test-eauction.uace.com.ua
     Go To  ${USERS.users['${username}'].homepage}
     Sleep  3
     Закрити Модалку
+    Click Element  xpath=//a[@class="dropdown-toggle"][contains(text(),"м.Приватизація")]
     Click Element  xpath=//*[@id="h-menu"]/descendant::a[contains(@href, "assets/index")]
     Wait Until Element Is Visible  xpath=//button[contains(text(), "Шукати")]
     Input Text  id=assetssearch-asset_cbd_id  ${tender_uaid}
@@ -174,8 +173,8 @@ ${host}  http://test-eauction.uace.com.ua
 
 
 Завантажити ілюстрацію в об'єкт МП
-  [Arguments]  ${username}  ${tender_uaid}  ${filepath}
-  uace.Завантажити документ в об'єкт МП з типом  ${username}  ${tender_uaid}  ${filepath}  illustration
+    [Arguments]  ${username}  ${tender_uaid}  ${filepath}
+    uace.Завантажити документ в об'єкт МП з типом  ${username}  ${tender_uaid}  ${filepath}  illustration
 
 
 Завантажити документ в об'єкт МП з типом
@@ -235,60 +234,60 @@ ${host}  http://test-eauction.uace.com.ua
 
 
 Отримати кількість активів в об'єкті МП
-  [Arguments]  ${username}  ${tender_uaid}
-  uace.Пошук об’єкта МП по ідентифікатору  ${username}  ${tender_uaid}
-  ${number_of_items}=  Get Matching Xpath Count  xpath=//div[@data-test-id="asset.item.description"]
-  ${number_of_items}=  Convert To Integer  ${number_of_items}
-  [Return]  ${number_of_items}
+    [Arguments]  ${username}  ${tender_uaid}
+    uace.Пошук об’єкта МП по ідентифікатору  ${username}  ${tender_uaid}
+    ${number_of_items}=  Get Matching Xpath Count  xpath=//div[@data-test-id="asset.item.description"]
+    ${number_of_items}=  Convert To Integer  ${number_of_items}
+    [Return]  ${number_of_items}
 
 
 Отримати інформацію про decisions
-  [Arguments]  ${field}
-  ${index}=  Set Variable  ${field.split('[')[1].split(']')[0]}
-  ${index}=  Convert To Integer  ${index}
-  ${value}=  Run Keyword If  'title' in '${field}'  Get Text  xpath=(//div[@data-test-id="asset.decision.title"])["${index + 1}"]
-  ...  ELSE IF  'decisionDate' in '${field}'  Get Text  xpath=(//div[@data-test-id="asset.decision.decisionDate"])["${index + 1}"]
-  ...  ELSE IF  'decisionID' in '${field}'  Get Text  xpath=(//div[@data-test-id="asset.decision.decisionID"])["${index + 1}"]
-  [Return]  ${value}
+    [Arguments]  ${field}
+    ${index}=  Set Variable  ${field.split('[')[1].split(']')[0]}
+    ${index}=  Convert To Integer  ${index}
+    ${value}=  Run Keyword If  'title' in '${field}'  Get Text  xpath=(//div[@data-test-id="asset.decision.title"])["${index + 1}"]
+    ...  ELSE IF  'decisionDate' in '${field}'  Get Text  xpath=(//div[@data-test-id="asset.decision.decisionDate"])["${index + 1}"]
+    ...  ELSE IF  'decisionID' in '${field}'  Get Text  xpath=(//div[@data-test-id="asset.decision.decisionID"])["${index + 1}"]
+    [Return]  ${value}
 
 
 ############################################## ЛОТИ #######################################
 
 Створити лот
-  [Arguments]  ${username}  ${tender_data}  ${asset_uaid}
-  uace.Пошук об’єкта МП по ідентифікатору  ${username}  ${asset_uaid}
-  Click Element  xpath=//a[contains(@href, "lot/create?asset")]
-  ${decision_date}=  convert_date_for_decision  ${tender_data.data.decisions[0].decisionDate}
-  Input Text   name=Lot[decisions][0][decisionDate]   ${decision_date}
-  Input Text   name=Lot[decisions][0][decisionID]   ${tender_data.data.decisions[0].decisionID}
-  Click Element  name=simple_submit
-  Wait Until Element Is Visible  xpath=//div[@data-test-id="lotID"]  20
-  ${lot_id}=  Get Text  xpath=//div[@data-test-id="lotID"]
-  [Return]  ${lot_id}
+    [Arguments]  ${username}  ${tender_data}  ${asset_uaid}
+    uace.Пошук об’єкта МП по ідентифікатору  ${username}  ${asset_uaid}
+    Click Element  xpath=//a[contains(@href, "lot/create?asset")]
+    ${decision_date}=  convert_date_for_decision  ${tender_data.data.decisions[0].decisionDate}
+    Input Text   name=Lot[decisions][0][decisionDate]   ${decision_date}
+    Input Text   name=Lot[decisions][0][decisionID]   ${tender_data.data.decisions[0].decisionID}
+    Click Element  name=simple_submit
+    Wait Until Element Is Visible  xpath=//div[@data-test-id="lotID"]  20
+    ${lot_id}=  Get Text  xpath=//div[@data-test-id="lotID"]
+    [Return]  ${lot_id}
 
 
 Заповнити дані для першого аукціону
-  [Arguments]  ${username}  ${tender_uaid}  ${auction}
-  ${value_amount}=  Convert To String  ${auction.value.amount}
-  ${minimalStep}=  Convert To String  ${auction.minimalStep.amount}
-  ${guarantee}=  Convert To String  ${auction.guarantee.amount}
-  ${registrationFee}=  Convert To String  ${auction.registrationFee.amount}
-  uace.Пошук лоту по ідентифікатору  ${username}  ${tender_uaid}
-  Click Element  xpath=//a[contains(@href, "lot/update")]
-  Wait Until Element Is Visible  id=auctions-checkBox
-  Click Element  id=auctions-checkBox
-  Wait Until Element Is Visible  id=value-value-0-amount
-  Input Text  name=Lot[auctions][0][value][amount]  ${value_amount}
-  ${tax}=  Set Variable If  ${auction.value.valueAddedTaxIncluded}  1  0
-  Select From List By Value   name=Lot[auctions][0][value][valueAddedTaxIncluded]  ${tax}
-  Input Text  name=Lot[auctions][0][minimalStep][amount]  ${minimalStep}
-  Input Text  name=Lot[auctions][0][guarantee][amount]  ${guarantee}
-  Input Date Auction  name=Lot[auctions][0][auctionPeriod][startDate]  ${auction.auctionPeriod.startDate}
-  Input Text  name=Lot[auctions][0][bankAccount][bankName]  ${auction.bankAccount.bankName}
-  ${bank_id}=  adapt_edrpou  ${auction.bankAccount.accountIdentification[0].id}
-  Input Text  name=Lot[auctions][0][bankAccount][accountIdentification][0][id]  ${bank_id}
-  Input Text  name=Lot[auctions][0][bankAccount][accountIdentification][1][id]  123456
-  Input Text  name=Lot[auctions][0][bankAccount][accountIdentification][2][id]  1234567890
+    [Arguments]  ${username}  ${tender_uaid}  ${auction}
+    ${value_amount}=  Convert To String  ${auction.value.amount}
+    ${minimalStep}=  Convert To String  ${auction.minimalStep.amount}
+    ${guarantee}=  Convert To String  ${auction.guarantee.amount}
+    ${registrationFee}=  Convert To String  ${auction.registrationFee.amount}
+    uace.Пошук лоту по ідентифікатору  ${username}  ${tender_uaid}
+    Click Element  xpath=//a[contains(@href, "lot/update")]
+    Wait Until Element Is Visible  id=auctions-checkBox
+    Click Element  id=auctions-checkBox
+    Wait Until Element Is Visible  id=value-value-0-amount
+    Input Text  name=Lot[auctions][0][value][amount]  ${value_amount}
+    ${tax}=  Set Variable If  ${auction.value.valueAddedTaxIncluded}  1  0
+    Select From List By Value   name=Lot[auctions][0][value][valueAddedTaxIncluded]  ${tax}
+    Input Text  name=Lot[auctions][0][minimalStep][amount]  ${minimalStep}
+    Input Text  name=Lot[auctions][0][guarantee][amount]  ${guarantee}
+    Input Date Auction  name=Lot[auctions][0][auctionPeriod][startDate]  ${auction.auctionPeriod.startDate}
+    Input Text  name=Lot[auctions][0][bankAccount][bankName]  ${auction.bankAccount.bankName}
+    ${bank_id}=  adapt_edrpou  ${auction.bankAccount.accountIdentification[0].id}
+    Input Text  name=Lot[auctions][0][bankAccount][accountIdentification][0][id]  ${bank_id}
+    Input Text  name=Lot[auctions][0][bankAccount][accountIdentification][1][id]  123456
+    Input Text  name=Lot[auctions][0][bankAccount][accountIdentification][2][id]  1234567890
 
 
 Заповнити дані для другого аукціону
@@ -302,12 +301,10 @@ ${host}  http://test-eauction.uace.com.ua
     Wait Until Element Is Visible  xpath=//*[@data-test-id="status"][contains(text(), "Перевірка доступності об’єкту")]
 
 
-
 Додати умови проведення аукціону
-  [Arguments]  ${username}  ${auction}  ${index}  ${tender_uaid}
-  Run Keyword If  ${index} == 0  Заповнити дані для першого аукціону  ${username}  ${tender_uaid}  ${auction}
-  ...  ELSE  Заповнити дані для другого аукціону  ${auction}
-
+    [Arguments]  ${username}  ${auction}  ${index}  ${tender_uaid}
+    Run Keyword If  ${index} == 0  Заповнити дані для першого аукціону  ${username}  ${tender_uaid}  ${auction}
+    ...  ELSE  Заповнити дані для другого аукціону  ${auction}
 
 
 Пошук лоту по ідентифікатору
@@ -316,6 +313,7 @@ ${host}  http://test-eauction.uace.com.ua
     Go To  ${USERS.users['${username}'].homepage}
     Sleep  3
     Закрити Модалку
+    Click Element  xpath=//a[contains(@class, "dropdown-toggle")][contains(text(), "м.Приватизація")]
     Click Element  xpath=//a[contains(@href, "lots/index")][contains(text(), "Інформаційні повідомлення")]
     Wait Until Element Is Visible  xpath=//button[@data-test-id="search"]
     Input Text  id=lotssearch-lot_cbd_id  ${tender_uaid}
@@ -344,7 +342,7 @@ ${host}  http://test-eauction.uace.com.ua
     ...  ELSE IF  'lotHolder.identifier.scheme' in '${field}'  Get Text  //*[@data-test-id="assetHolder.identifier.scheme"]
     ...  ELSE IF  'lotHolder.name' in '${field}'  Get Text  //*[@data-test-id="assetHolder.name"]
     ...  ELSE IF  '${field}' == 'status'  Get Text  xpath=//div[@data-test-id="status"]
-    ...  ELSE IF  '${field}' == 'assetID'  Get Text  xpath=//div[@data-test-id="tenderID"]
+    ...  ELSE IF  'relatedProcessID' in '${field}'  Get Element Attribute  xpath=//*[@id="asset-id"]@value
     ...  ELSE IF  '${field}' == 'description'  Get Text  xpath=//div[@data-test-id="item.description"]
     ...  ELSE IF  '${field}' == 'documents[0].documentType'  Get Text  xpath=//a[contains(@href, "info/ssp_details")]/../following-sibling::div[1]
     ...  ELSE IF  'decisions' in '${field}'  Отримати інформацію про lot decisions  ${field}
@@ -394,18 +392,18 @@ ${host}  http://test-eauction.uace.com.ua
 
 
 Отримати інформацію про lot decisions
-  [Arguments]  ${field}
-  ${index}=  Set Variable  ${field.split('[')[1].split(']')[0]}
-  ${index}=  Convert To Integer  ${index}
-  ${value}=  Run Keyword If  'title' in '${field}'  Get Text  xpath=(//div[@data-test-id="decision.title"])[${index + 1}]
-  ...  ELSE IF  'decisionDate' in '${field}'  Get Text  xpath=(//div[@data-test-id="decision.decisionDate"])[${index + 1}]
-  ...  ELSE IF  'decisionID' in '${field}'  Get Text  xpath=(//div[@data-test-id="decision.decisionID"])[${index + 1}]
-  [Return]  ${value}
+    [Arguments]  ${field}
+    ${index}=  Set Variable  ${field.split('[')[1].split(']')[0]}
+    ${index}=  Convert To Integer  ${index}
+    ${value}=  Run Keyword If  'title' in '${field}'  Get Text  xpath=(//div[@data-test-id="decision.title"])[${index + 1}]
+    ...  ELSE IF  'decisionDate' in '${field}'  Get Text  xpath=(//div[@data-test-id="decision.decisionDate"])[${index + 1}]
+    ...  ELSE IF  'decisionID' in '${field}'  Get Text  xpath=(//div[@data-test-id="decision.decisionID"])[${index + 1}]
+    [Return]  ${value}
 
 
 Завантажити ілюстрацію в лот
-  [Arguments]  ${username}  ${tender_uaid}  ${filepath}
-  uace.Завантажити документ в лот з типом  ${username}  ${tender_uaid}  ${filepath}  illustration
+    [Arguments]  ${username}  ${tender_uaid}  ${filepath}
+    uace.Завантажити документ в лот з типом  ${username}  ${tender_uaid}  ${filepath}  illustration
 
 
 Завантажити документ в лот з типом
@@ -461,14 +459,14 @@ ${host}  http://test-eauction.uace.com.ua
 
 
 Внести зміни в актив лоту
-  [Arguments]  ${username}  ${item_id}  ${tender_uaid}  ${field_name}  ${field_value}
-  uace.Пошук лоту по ідентифікатору  ${username}  ${tender_uaid}
-  Click Element  xpath=//a[contains(@href, "lot/update")]
-  Wait Until Element Is Visible  id=decision-title
-  ${quantity}=  Convert To String  ${field_value}
-  Run Keyword If   '${field_name}' == 'quantity'  Input Text  xpath=//input[contains(@value, "${item_id}")]/../../following-sibling::div[2]/descendant::input[contains(@name, "quantity")]  ${quantity}
-  Scroll To And Click Element  //*[@name="simple_submit"]
-  Wait Until Element Is Visible  xpath=//div[@data-test-id="lotID"]
+    [Arguments]  ${username}  ${item_id}  ${tender_uaid}  ${field_name}  ${field_value}
+    uace.Пошук лоту по ідентифікатору  ${username}  ${tender_uaid}
+    Click Element  xpath=//a[contains(@href, "lot/update")]
+    Wait Until Element Is Visible  id=decision-title
+    ${quantity}=  Convert To String  ${field_value}
+    Run Keyword If   '${field_name}' == 'quantity'  Input Text  xpath=//input[contains(@value, "${item_id}")]/../../following-sibling::div[2]/descendant::input[contains(@name, "quantity")]  ${quantity}
+    Scroll To And Click Element  //*[@name="simple_submit"]
+    Wait Until Element Is Visible  xpath=//div[@data-test-id="lotID"]
 
 
 Внести зміни в умови проведення аукціону
@@ -486,8 +484,8 @@ ${host}  http://test-eauction.uace.com.ua
 
 
 Завантажити документ для видалення лоту
-  [Arguments]  ${username}  ${tender_uaid}  ${file_path}
-  uace.Завантажити документ в лот з типом  ${username}  ${tender_uaid}  ${filepath}  cancellationDetails
+    [Arguments]  ${username}  ${tender_uaid}  ${file_path}
+    uace.Завантажити документ в лот з типом  ${username}  ${tender_uaid}  ${filepath}  cancellationDetails
 
 
 Видалити лот
@@ -514,8 +512,9 @@ ${host}  http://test-eauction.uace.com.ua
     Wait Until Element Is Visible  id=tenderssearch-tender_cbd_id
     Input Text  id=tenderssearch-tender_cbd_id  ${tender_uaid}
     Click Element  xpath=//button[@data-test-id="search"]
-    Wait Until Keyword Succeeds  10 x  1 s  Wait Until Element Is Visible  xpath=//div[@class="search-result"]/descendant::div[contains(text(), "${tender_uaid}")]
-    Wait Until Keyword Succeeds  20 x  1 s  Run Keywords
+    Run Keyword And Ignore Error  Wait Until Keyword Succeeds  10 x  1 s  Wait Until Element Is Visible  xpath=//div[@class="search-result"]/descendant::div[contains(text(), "${tender_uaid}")]
+    Закрити Модалку
+    Run Keyword And Ignore Error  Wait Until Keyword Succeeds  20 x  1 s  Run Keywords
     ...  Click Element  xpath=//div[@class="search-result"]/descendant::div[contains(text(), "${tender_uaid}")]/../following-sibling::div/a
     ...  AND  Wait Until Element Is Not Visible  xpath=//button[contains(text(), "Шукати")]  5
     Закрити Модалку
@@ -547,17 +546,17 @@ ${host}  http://test-eauction.uace.com.ua
 
 
 Отримати інформацію із предмету
-  [Arguments]  ${username}  ${tender_uaid}  ${item_id}  ${field}
-  ${value}=  Get Text  xpath=//div[contains(text(),'${item_id}')]/ancestor::div[contains(@class, "item-inf_txt")]/descendant::*[@data-test-id="item.${field}"]
-  ${value}=  adapt_data  ${field}  ${value}
-  [Return]  ${value}
+    [Arguments]  ${username}  ${tender_uaid}  ${item_id}  ${field}
+    ${value}=  Get Text  xpath=//div[contains(text(),'${item_id}')]/ancestor::div[contains(@class, "item-inf_txt")]/descendant::*[@data-test-id="item.${field}"]
+    ${value}=  adapt_data  ${field}  ${value}
+    [Return]  ${value}
 
 
 Отримати інформацію із документа
-  [Arguments]  ${username}  ${tender_uaid}  ${doc_id}  ${field}
-  Run Keyword If   '${field}' == 'description'   Fail    ***** Опис документу скасування закупівлі не виводиться на майданчику *****
-  ${value}=   Get Text   xpath=//*[contains(text(),'${doc_id}')]
-  [Return]  ${value}
+    [Arguments]  ${username}  ${tender_uaid}  ${doc_id}  ${field}
+    Run Keyword If   '${field}' == 'description'   Fail    ***** Опис документу скасування закупівлі не виводиться на майданчику *****
+    ${value}=   Get Text   xpath=//*[contains(text(),'${doc_id}')]
+    [Return]  ${value}
 
 
 Скасувати закупівлю
@@ -568,6 +567,7 @@ ${host}  http://test-eauction.uace.com.ua
     Select From List By Label  //*[@id="cancellation-reason"]  ${cancellation_reason}
     Choose File  xpath=//*[@action="/tender/fileupload"]/input  ${file_path}
     Wait Until Element Is Visible  xpath=(//input[@class="file_name"])[last()]
+    Закрити Модалку
     Input Text  xpath=(//input[@class="file_name"])[last()]  ${file_path.split('/')[-1]}
     Click Element  xpath=//button[@id="submit-cancel-auction"]
     Wait Until Element Is Visible  xpath=//*[@data-test-id="sidebar.cancell"]
@@ -600,6 +600,7 @@ ${host}  http://test-eauction.uace.com.ua
     ...  ELSE  Go To  ${host}/bids/decline/${url.split('/')[-1]}?token=465
     Go To  ${USERS.users['${username}'].homepage}
 
+
 Змінити цінову пропозицію
     [Arguments]  ${username}  ${tender_uaid}  ${field}  ${value}
     uace.Пошук Тендера По Ідентифікатору  ${username}  ${tender_uaid}
@@ -607,6 +608,7 @@ ${host}  http://test-eauction.uace.com.ua
     Convert Input Data To String  xpath=//input[@id="value-amount"]  ${value}
     Click Element  xpath=//button[@id="submit_bid"]
     Page Should Contain Element  xpath=//*[contains(@class, "label-success")][contains(text(), "опубліковано")]
+
 
 Скасувати цінову пропозицію
     [Arguments]  ${username}  ${tender_uaid}
@@ -624,6 +626,7 @@ ${host}  http://test-eauction.uace.com.ua
     ${value}=  Get Value  xpath=//input[@id="value-amount"]
     ${value}=  adapt_data  ${field}  ${value}
     [Return]  ${value}
+
 
 Завантажити документ в ставку
     [Arguments]  ${username}  ${file_path}  ${tender_uaid}
@@ -696,6 +699,7 @@ ${host}  http://test-eauction.uace.com.ua
     Wait Until Keyword Succeeds  20 x  1 s  JQuery Ajax Should Complete
     ${link}=  Execute Javascript  return window['url'];
     [Return]  ${link}
+
 
 Отримати посилання на аукціон для глядача
     [Arguments]  ${viewer}  ${tender_uaid}
@@ -854,7 +858,7 @@ ${host}  http://test-eauction.uace.com.ua
     Click Element  xpath=//button[@data-bb-handler="confirm"]
     Wait Until Keyword Succeeds  10 x  5 s  Run Keywords
     ...  Reload Page
-    ...  AND  Page Should Contain Element  xpath=//div[@data-test-id="status"][contains(text(), "Продаж завершений")]
+    ...  AND  Page Should Contain Element  xpath=//div[@data-test-id="status"][contains(text(), "Аукціон відбувся (або 1 учасник)")]
 
 Перейти на сторінку кваліфікації
     ${status_q}=  Run Keyword And Return Status  Page Should Contain Element  xpath=//a[contains(text(), "Таблиця квалiфiкацiї")]  3
@@ -868,6 +872,13 @@ ${host}  http://test-eauction.uace.com.ua
 Input Amount
     [Arguments]  ${locator}  ${value}
     ${value}=  Convert To String  ${value}
+    Clear Element Text  ${locator}
+    Input Text  ${locator}  ${value}
+
+
+Input Date Milestone
+    Arguments]  ${locator}  ${value}
+    ${value}=  convert_date_for_milestone  ${value}
     Clear Element Text  ${locator}
     Input Text  ${locator}  ${value}
 
@@ -902,7 +913,7 @@ Scroll To And Click Element
 
 Закрити Модалку
     ${status}=  Run Keyword And Return Status  Wait Until Element Is Visible  xpath=//button[@data-dismiss="modal"]  5
-    Run Keyword If  ${status}  Wait Until Keyword Succeeds  5 x  1 s  Run Keywords
+    Run Keyword If  ${status}  Run Keyword And Ignore Error  Wait Until Keyword Succeeds  5 x  1 s  Run Keywords
     ...  Click Element  xpath=//button[@data-dismiss="modal"]
     ...  AND  Wait Until Element Is Not Visible  xpath=//*[contains(@class, "modal-backdrop")]
 
@@ -915,3 +926,165 @@ Convert Input Data To String
 JQuery Ajax Should Complete
     ${active}=  Execute Javascript  return jQuery.active
     Should Be Equal  "${active}"  "0"
+
+
+Активувати контракт
+    [Arguments]  ${username}  ${contract_uaid}
+    Sleep  300
+
+
+Пошук договору по ідентифікатору
+    [Arguments]  ${username}  ${contract_uaid}
+    Switch Browser  my_alias
+    Go To  ${USERS.users['${username}'].homepage}
+    Sleep  10
+    Закрити Модалку
+    Click Element  xpath=//a[@class="dropdown-toggle"][contains(text(),"м.Приватизація")]
+    Click Element  xpath=//*[@id="h-menu"]/descendant::a[contains(@href, "contracting")]
+    Wait Until Element Is Visible  xpath=//button[contains(text(), "Шукати")]
+    Input Text  id=contractingsearch-contract_cbd_id  ${contract_uaid}
+    Click Element  xpath=//button[contains(text(), "Шукати")]
+    Wait Until Keyword Succeeds  30 x  2 s  Wait Until Element Is Visible  xpath=//div[@class="search-result"]/descendant::div[contains(text(), "${contract_uaid}")]
+    Run Keyword And Ignore Error  Wait Until Keyword Succeeds  20 x  3 s  Run Keywords
+    ...  Click Element  xpath=//div[@class="search-result"]/descendant::div[contains(text(), "${contract_uaid}")]/../../div[2]/a[contains(@href, "/contracting/view")]
+    ...  AND  Wait Until Element Is Not Visible  xpath=//button[contains(text(), "Шукати")]  10
+    Закрити Модалку
+
+
+Отримати інформацію із договору
+    [Arguments]  ${username}  ${contract_uaid}  ${field}
+    uace.Пошук договору по ідентифікатору  ${username}  ${contract_uaid}
+    ${value}=  Get Text  xpath=//div[@data-test-id="status"]
+    ${value}=  adapt_lot_data  ${field}  ${value}
+    [Return]  ${value}
+
+
+Отримати інформацію з активу в договорі
+    [Arguments]  ${username}  ${contract_uaid}  ${item_id}  ${field_name}
+    uace.Пошук договору по ідентифікатору  ${username}  ${contract_uaid}
+    ${item_value}=  Get Text  xpath=//div[@data-test-id="item.description"][contains(text(), "${item_id}")]
+    [Return]  ${item_value}
+
+
+Вказати дату отримання оплати
+    [Arguments]  ${username}  ${contract_uaid}  ${dateMet}  ${index}
+    uace.Пошук договору по ідентифікатору  ${username}  ${contract_uaid}
+    Click Element  xpath=//button[@class="mk-btn mk-btn_default"][contains(text(), "Оплата договору")]
+    Wait Until Keyword Succeeds  10 x  1 s  Wait Until Element Is Visible  xpath=//div[@class="h2 text-center"][contains(text(), "Оплата договору")]
+    Click Element  xpath=//select[@id="milestone-status"]
+    ${date_paid}=  convert_date_for_date_paid  ${dateMet}
+    Wait Element Animation  xpath=//input[@name="Milestone[dateMet]"]
+    Focus  xpath=//input[@name="Milestone[dateMet]"]
+    Clear Element Text	xpath=//input[@name="Milestone[dateMet]"]
+    Input Text  xpath=//input[@name="Milestone[dateMet]"]  ${date_paid}
+    Sleep  3
+    Click Element  xpath=//button[@class="mk-btn mk-btn_accept"][contains(text(),"Завантажити дані")]
+    Wait Until Element Is Not Visible  xpath=//*[contains(@class, "modal-backdrop")]
+
+
+Підтвердити відсутність оплати
+    [Arguments]  ${username}  ${contract_uaid}  ${index}
+    uace.Пошук договору по ідентифікатору  ${username}  ${contract_uaid}
+    Click Element  xpath=//button[@class="mk-btn mk-btn_default"][contains(text(), "Оплата договору")]
+    Wait Until Keyword Succeeds  10 x  1 s  Wait Until Element Is Visible  xpath=//div[@class="h2 text-center"][contains(text(), "Оплата договору")]
+    Select From List By Value  xpath=//select[@id="milestone-status"]  notMet
+    Click Element  xpath=//button[@class="mk-btn mk-btn_accept"][contains(text(),"Завантажити дані")]
+    Wait Until Element Is Not Visible  xpath=//*[contains(@class, "modal-backdrop")]
+
+
+Завантажити наказ про завершення приватизації
+    [Arguments]  ${username}  ${contract_uaid}  ${file_path}
+    uace.Пошук договору по ідентифікатору  ${username}  ${contract_uaid}
+    Click Element  xpath=//button[contains(text(), 'Наказ про завершення')]
+    Wait Until Keyword Succeeds  10 x  1 s  Wait Until Element Is Visible  xpath=//button[contains(text(), 'Завантажити дані')]
+    Click Element  xpath=//div[contains(text(), 'Додати документ')]
+    Choose File  xpath=//input[contains(@id,"ajax-upload-id")]  ${file_path}
+    Wait Until Element Is Visible  xpath=//select[@id="document-0-documenttype"]
+    Select From List By Label  xpath=//select[@id="document-0-documenttype"]  Наказ про приватизацію
+    Click Element  xpath=//button[@class="mk-btn mk-btn_accept"]
+
+
+Вказати дату прийняття наказу
+    [Arguments]  ${username}  ${contract_uaid}  ${dateMet}
+    uace.Пошук договору по ідентифікатору  ${username}  ${contract_uaid}
+    Click Element  xpath=//button[contains(text(), 'Наказ про завершення')]
+    Wait Until Keyword Succeeds  10 x  1 s  Wait Until Element Is Visible  xpath=//button[contains(text(), 'Завантажити дані')]
+    Click Element  xpath=//div[contains(text(), 'Додати документ')]
+    ${file_path}=   get_upload_file_path
+    Choose File  xpath=//input[contains(@id,"ajax-upload-id")]  ${file_path}
+    Wait Until Page Contains Element  //select[@id="document-0-documenttype"] /option[contains(text(),"Наказ про приватизацію")]
+    Select From List By Label  xpath=//select[@id="document-0-documenttype"]  Наказ про приватизацію
+    ${date_nakaz}  convert_date_for_date_paid  ${dateMet}
+    Input Text  xpath=//input[@name="Milestone[dateMet]"]  ${date_nakaz}
+    Click Element  xpath=//button[@class="mk-btn mk-btn_accept"]
+    Wait Until Element Is Not Visible  xpath=//*[contains(@class, "modal-backdrop")]
+    Wait Until Keyword Succeeds  30 x  10 s  Run Keywords
+    ...  Reload Page
+    ...  AND  Wait Until Page Does Not Contain   Документ завантажується...  10
+
+
+Підтвердити відсутність наказу про приватизацію
+    [Arguments]  ${username}  ${contract_uaid}  ${file_path}
+    uace.Пошук договору по ідентифікатору  ${username}  ${contract_uaid}
+    Click Element  xpath=//button[contains(text(), 'Наказ про завершення')]
+    Wait Until Keyword Succeeds  10 x  1 s  Wait Until Element Is Visible  xpath=//button[contains(text(), 'Завантажити дані')]
+    Click Element  xpath=//div[contains(text(), 'Додати документ')]
+    Choose File  xpath=//input[contains(@id,"ajax-upload-id")]  ${file_path}
+    Wait Until Element Is Visible  xpath=//select[@class="document-type"][@id="document-0-documenttype"]
+    Select From List By Label  xpath=//select[@id="document-0-documenttype"]  Наказ про завершення приватизації відсутній
+    Select From List By Value  xpath=//select[@id="milestone-status"]  notMet
+    Click Element  xpath=//button[@class="mk-btn mk-btn_accept"]
+    Wait Until Element Is Not Visible  xpath=//*[contains(@class, "modal-backdrop")]
+    Wait Until Keyword Succeeds  30 x  10 s  Run Keywords
+    ...  Reload Page
+    ...  AND  Wait Until Page Does Not Contain   Документ завантажується...  10
+
+
+Вказати дату виконання умов контракту
+    [Arguments]  ${username}  ${contract_uaid}  ${dateMet}
+    uace.Пошук договору по ідентифікатору  ${username}  ${contract_uaid}
+    Click Element  xpath=//button[contains(text(), 'Виконання умов продажу')]
+    Wait Until Element Is Visible  xpath=//div[contains(text(), 'Додати документ')]
+    Click Element  xpath=//div[contains(text(), 'Додати документ')]
+    ${file_path}=   get_upload_file_path
+    Choose File  xpath=//input[contains(@id,"ajax-upload-id")]  ${file_path}
+    Wait Until Page Contains Element  //select[@id="document-0-documenttype"] /option[contains(text(),"registerExtract")]
+    Select From List By Label  xpath=//select[@id="document-0-documenttype"]  registerExtract
+    ${date_paid}=  convert_date_for_date_paid  ${dateMet}
+    Input Text  xpath=//input[@name="Milestone[dateMet]"]  ${date_paid}
+    Click Element  xpath=//button[@class="mk-btn mk-btn_accept"][contains(text(),"Завантажити дані")]
+    Wait Until Element Is Not Visible  xpath=//*[contains(@class, "modal-backdrop")]
+    Wait Until Keyword Succeeds  30 x  10 s  Run Keywords
+    ...  Reload Page
+    ...  AND  Wait Until Page Does Not Contain   Документ завантажується...  10
+
+
+Підтвердити невиконання умов приватизації
+    [Arguments]  ${username}  ${contract_uaid}
+    uace.Пошук договору по ідентифікатору  ${username}  ${contract_uaid}
+    Click Element  xpath=//button[contains(text(), 'Виконання умов продажу')]
+    Wait Until Keyword Succeeds  10 x  1 s  Wait Until Element Is Visible  xpath=//button[contains(text(), 'Завантажити дані')]
+    Click Element  xpath=//div[contains(text(), 'Додати документ')]
+    ${file_path}=   get_upload_file_path
+    Choose File  xpath=//input[contains(@id,"ajax-upload-id")]  ${file_path}
+    Wait Until Element Is Visible  xpath=//select[@class="document-type"][@id="document-0-documenttype"]
+    Select From List By Label  xpath=//select[@id="document-0-documenttype"]  conflictOfInterest
+    Select From List By Value  xpath=//select[@id="milestone-status"]  notMet
+    Click Element  xpath=//button[@class="mk-btn mk-btn_accept"]
+    Wait Until Element Is Not Visible  xpath=//*[contains(@class, "modal-backdrop")]
+    Wait Until Keyword Succeeds  30 x  10 s  Run Keywords
+    ...  Reload Page
+    ...  AND  Wait Until Page Does Not Contain   Документ завантажується...  10
+
+
+Wait Element Animation
+    [Arguments]  ${locator}
+    Set Test Variable  ${prev_vert_pos}  0
+    Wait Until Keyword Succeeds  20 x  500 ms  Position Should Equals  ${locator}
+
+Position Should Equals
+    [Arguments]  ${locator}
+    ${current_vert_pos}=  Get Vertical Position  ${locator}
+    ${status}=  Run Keyword And Return Status  Should Be Equal  ${prev_vert_pos}  ${current_vert_pos}
+    Set Test Variable  ${prev_vert_pos}  ${current_vert_pos}
+    Should Be True  ${status}
