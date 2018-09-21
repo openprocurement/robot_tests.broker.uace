@@ -1,9 +1,11 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 from datetime import datetime
+from iso8601 import parse_date
 import pytz
 import urllib
 import re
+import os
 
 
 tz = str(datetime.now(pytz.timezone('Europe/Kiev')))[26:]
@@ -46,8 +48,19 @@ def convert_date_for_item(date):
     return '{}'.format(date)
 
 
+def convert_date_for_date_paid(date):
+    iso_dt = parse_date(date)
+    date_string = iso_dt.strftime("%d.%m.%Y %H:%M")
+    return date_string
+
+
 def convert_date_for_auction(date):
     date = datetime.strptime(date, '%Y-%m-%dT%H:%M:%S.%f{}'.format(tz)).strftime('%d/%m/%Y %H:%M:%S')
+    return '{}'.format(date)
+
+
+def convert_date_for_milestone():
+    date = datetime.strptime(date, '%Y-%m-%dT%H:%M:%S'.format(tz)).strftime('%d.%m.%Y %H:%M')
     return '{}'.format(date)
 
 
@@ -79,9 +92,13 @@ def adapted_dictionary(value):
         u'Аукціон': 'active.auction',
         u'Очiкування пропозицiй': 'active.tendering',
         u'Торги не відбулися': 'unsuccessful',
+        u'Аукціон не відбувся': 'unsuccessful',
         u'Продаж завершений': 'complete',
         u'Торги скасовано': 'cancelled',
+        u'Аукціон відмінено': 'cancelled',
         u'Квалiфiкацiя переможця': 'active.qualification',
+        u'Прийняття заяв на участь': 'active.qualification',
+        u'Очікується опублікування протоколу': 'active.qualification',
         u'Очікується рішення': 'pending.waiting',
         u'Очікується протокол': 'pending',
         u'Рішення скасоване': 'unsuccessful',
@@ -96,10 +113,22 @@ def adapted_dictionary(value):
         u'Публікація інформаційного повідомлення': u'composing',
         u'Перевірка доступності об’єкту': u'verification',
         u'lot.status.pending.deleted': u'pending.deleted',
-        u'Лот видалено': u'deleted',
+        u'Об’єкт виключено': u'deleted',
         u'Інформація': u'informationDetails',
         u'об’єктів малої приватизації - аукціон': u'sellout.english',
-        u'Заплановано': u'scheduled'
+        u'Заплановано': u'scheduled',
+        u'Виконано': u'met',
+        u'Не виконано': u'notMet',
+        u'Завершений': u'terminated',
+        u'Не успішний': u'unsuccessful',
+        u'Очікується оплата.': u'active.confirmation',
+        u'Очікується оплата': u'active.payment',
+        u'Договір оплачено. Очікується наказ': u'active.approval',
+        u'Період виконання умов продажу (період оскарження)': u'active',
+        u"Приватизація об’єкта завершена.": u'pending.terminated',
+        u"Приватизація об’єкта неуспішна.": u'pending.unsuccessful',
+        u"Приватизація об’єкта завершена": u'terminated',
+        u"Приватизація об’єкта неуспішна": u'unsuccessful'
     }.get(value, value)
 
 
@@ -178,3 +207,8 @@ def adapt_edrpou(value):
 
 def download_file(url, filename, folder):
     urllib.urlretrieve(url, ('{}/{}'.format(folder, filename)))
+
+
+def get_upload_file_path():
+    return os.path.join(os.getcwd(), 'src/robot_tests.broker.uace/Doc.pdf')
+
